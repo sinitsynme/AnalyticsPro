@@ -1,12 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>АналитикаПро</title>
+    <title>Home | AnalyticsPro</title>
+    <div th:remove="tag" th:include="fragments.html :: headerFiles"></div>
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
-<h1>АналитикаПро</h1>
 
+<div class="container-fluid">
+
+    <!--/*@thymesVar id="loggedIn" type="boolean"*/-->
+    <div th:insert="fragments.html :: header(${loggedIn})"></div>
+
+    <div class="text-center mt-3">
+        <h1>AnalyticsPro</h1>
+    </div>
+
+    <div class="text-center mt-3">
+
+    </div>
+
+    <div class="mt-xl-5" th:insert="fragments.html :: footer"></div>
+</div>
 </body>
 </html>
