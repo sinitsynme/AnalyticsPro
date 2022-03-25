@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Home | AnalyticsPro</title>
@@ -17,11 +17,22 @@
         <h1>AnalyticsPro</h1>
     </div>
 
-    <div class="text-center mt-3">
-
+    <div class="d-flex justify-content-center p-2">
+        <!--/*@thymesVar id="error" type="String"*/-->
+        <div th:unless="${param.error == null}" th:text="${param.error}" class="alert alert-danger" role="alert"></div>
     </div>
 
-    <div class="mt-xl-5" th:insert="fragments.html :: footer"></div>
+    <div>
+        <img style="display: block; margin-left: auto; margin-right: auto;"
+             src="../static/images/logo_blue.jpeg"
+             th:src="@{/images/logo_blue.jpeg}" height="200px">
+    </div>
+
+    <div sec:authorize="isAuthenticated()" class="text-center mt-3">
+        <h4>Hello! You have [[${appsQuantity}]] application(s) registered!</h4>
+    </div>
+
+    <div class="mt-3" th:insert="fragments.html :: footer"></div>
 </div>
 </body>
 </html>
