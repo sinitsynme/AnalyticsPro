@@ -1,4 +1,7 @@
-package ru.sinitsynme.analyticspro.entity;
+package ru.sinitsynme.analyticspro.entity.event;
+
+import ru.sinitsynme.analyticspro.entity.ApplicationEntity;
+import ru.sinitsynme.analyticspro.entity.event.EventType;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -12,7 +15,12 @@ public class EventEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Transient
     private String name;
+
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "event_type_id")
+    private EventType eventType;
 
     private String additionalData;
 
@@ -76,5 +84,13 @@ public class EventEntity {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
     }
 }

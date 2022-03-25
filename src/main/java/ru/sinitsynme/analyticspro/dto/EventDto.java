@@ -45,4 +45,13 @@ public class EventDto {
     public void setAdditionalData(String additionalData) {
         this.additionalData = additionalData;
     }
+
+    @Override
+    public String toString() {
+        return "EventDto{" +
+                "name='" + name + '\'' +
+                ", applicationId=" + applicationId +
+                ", additionalData='" + additionalData + '\'' +
+                '}';
+    }
 }
