@@ -16,7 +16,7 @@ public class EventEntity {
 
     private String additionalData;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "application_id")
     private ApplicationEntity application;
 
@@ -31,7 +31,7 @@ public class EventEntity {
         this.application = application;
     }
 
-    public EventEntity(String name, String additionalData, ApplicationEntity application) {
+    public EventEntity(String name, String additionalData, ApplicationEntity application, Date date) {
         this.name = name;
         this.additionalData = additionalData;
         this.application = application;
