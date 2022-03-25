@@ -2,12 +2,117 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Statistics | AnalyticsPro</title>
+    <title>[[${app.name}]] | AnalyticsPro</title>
+    <div th:remove="tag" th:include="fragments.html :: headerFiles"></div>
+    <script type="text/javascript"
+            src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" th:inline="javascript">
+
+        // Load the Visualization API and the corechart package.
+        google.charts.load('current', {'packages': ['corechart']});
+
+        // Set a callback to run when the Google Visualization API is loaded.
+        google.charts.setOnLoadCallback(drawPieChart);
+
+        // Callback that creates and populates a data table,
+        // instantiates the pie chart, passes in the data and
+        // draws it.
+        function drawPieChart() {
+
+            // Create the data table.
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Event');
+            data.addColumn('number', 'Actions');
+            data.addRows([[${chartData}]]);
+
+            var appName = [[${app.name}]];
+
+            // Set chart options
+            var options = {
+                'title': 'Events of application \"' + appName + "\"",
+                'width': 500,
+                'height': 400
+            };
+
+            // Instantiate and draw our chart, passing in some options.
+            var piechart = new google.visualization.PieChart(document.getElementById('pie_chart_div'));
+            piechart.draw(data, options);
+        }
+
+        google.charts.setOnLoadCallback(drawLineChart);
+
+        function drawLineChart() {
+            var data = google.visualization.arrayToDataTable([
+                ['Year', 'Sales', 'Expenses'],
+                ['2004', 1000, 400],
+                ['2005', 1170, 460],
+                ['2006', 660, 1120],
+                ['2007', 1030, 540]
+            ]);
+
+            var options = {
+                title: 'Company Performance',
+                curveType: 'function',
+                legend: {position: 'bottom'}
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('line_chart'));
+
+            chart.draw(data, options);
+        }
+
+    </script>
 </head>
-<body>
+
+<body class="d-flex flex-column min-vh-100">
+
+<div class="container-fluid">
+    <div th:insert="fragments.html :: header(true)"></div>
+
+    <div style="text-align: center" class="mt-3">
+        <h1>Dashboard >> [[${app.name}]]</h1>
+    </div>
 
 
+    <form method="get" th:action="@{/applications/{id}(id=${app.id})}">
+        <div class="border border-secondary rounded p-3">
+            <div class="form-group row" th:object="${eventFilterDto}">
+                <label class="col-sm-4 col-form-label">Event Types</label>
+                <div class="col-sm-8">
+                    <th:block th:each="eventType : ${eventTypes}">
+                        <input type="checkbox" name="roles"
+                               th:field="*{filter}" th:text="${eventType.name}" th:value="${eventType.id}" class="m-2">
+                    </th:block>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <input type="submit" value="Filter" class="btn btn-primary">
+            </div>
+        </div>
+    </form>
 
 
+    <div class="mt-0" style="width: 600px;">
+        <div id="pie_chart_div"></div>
+    </div>
+
+<!--    <div class="mt-0" style="width: 600px;">-->
+<!--        <div id="line_chart"></div>-->
+<!--    </div>-->
+
+
+    <!--<div>-->
+    <!--    <p th:text="${chartData}"></p>-->
+    <!--    <p th:text="${eventDtos}"></p>-->
+
+    <!--</div>-->
+
+    <div th:insert="fragments.html :: footer"></div>
+
+</div>
 </body>
 </html>
+
+
