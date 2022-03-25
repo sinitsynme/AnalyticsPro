@@ -1,6 +1,7 @@
 package ru.sinitsynme.analyticspro.entity;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -15,8 +16,8 @@ public class UserEntity {
 
     private String password;
 
-    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "user")
-    private List<ApplicationEntity> applicationList;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
+    private List<ApplicationEntity> applicationList = new ArrayList<>();
 
     public UserEntity() {
     }
@@ -48,5 +49,13 @@ public class UserEntity {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<ApplicationEntity> getApplicationList() {
+        return applicationList;
+    }
+
+    public void setApplicationList(List<ApplicationEntity> applicationList) {
+        this.applicationList = applicationList;
     }
 }
