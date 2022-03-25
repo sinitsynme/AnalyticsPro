@@ -38,11 +38,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/", "/static/**", "/webjars/**", "/images/**", "/register", "/users/register", "/login").permitAll()
+        http.authorizeRequests().antMatchers("/", "/static/**", "/webjars/**", "/images/**", "/register", "/users/register", "/login", "/events").permitAll()
                 .anyRequest().authenticated()
                 .and().formLogin(it -> it.defaultSuccessUrl("/", true).failureHandler(new SimpleUrlAuthenticationFailureHandler("/login?error=Invalid login or password")).loginPage("/login").usernameParameter("email").permitAll())
                 .logout().permitAll().clearAuthentication(true).deleteCookies("JSESSIONID")
-                .logoutSuccessUrl("/");
+                .logoutSuccessUrl("/")
+                .and().csrf().ignoringAntMatchers("/events");
     }
 
 
