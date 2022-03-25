@@ -8,6 +8,8 @@ import ru.sinitsynme.analyticspro.dto.UserDto;
 import ru.sinitsynme.analyticspro.entity.UserEntity;
 import ru.sinitsynme.analyticspro.service.UserService;
 
+import java.util.Optional;
+
 
 @Controller
 public class MainController {
@@ -17,6 +19,17 @@ public class MainController {
     @Autowired
     public MainController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping
+    public ModelAndView modelAndView(){
+        ModelAndView modelAndView = new ModelAndView("index");
+        if(userService.isPrincipalAvailable()){
+            Optional<UserEntity> optionalUser = userService.getPrincipalEntity();
+            optionalUser.ifPresent(userEntity ->
+                    modelAndView.addObject("appsQuantity", userEntity.getApplicationList().size()));
+        }
+        return modelAndView;
     }
 
     @GetMapping("/register")
