@@ -1,6 +1,7 @@
 package ru.sinitsynme.analyticspro.entity;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -16,6 +17,9 @@ public class ApplicationEntity {
     private UserEntity user;
 
     private String name;
+
+    @Temporal(TemporalType.DATE)
+    private Date registrationDate;
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "application")
     private List<EventEntity> eventList;
@@ -58,5 +62,13 @@ public class ApplicationEntity {
 
     public void setEventList(List<EventEntity> eventList) {
         this.eventList = eventList;
+    }
+
+    public Date getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(Date registrationDate) {
+        this.registrationDate = registrationDate;
     }
 }
