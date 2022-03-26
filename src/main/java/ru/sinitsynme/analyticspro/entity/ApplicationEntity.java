@@ -24,10 +24,10 @@ public class ApplicationEntity {
     @Temporal(TemporalType.DATE)
     private Date registrationDate;
 
-    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "application")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "application")
     private List<EventEntity> eventList;
 
-    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "application")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "application")
     private List<EventType> eventTypeList;
 
 

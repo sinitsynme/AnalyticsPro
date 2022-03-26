@@ -16,7 +16,7 @@ public class UserEntity {
 
     private String password;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "user")
     private List<ApplicationEntity> applicationList = new ArrayList<>();
 
     public UserEntity() {
