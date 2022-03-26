@@ -16,6 +16,7 @@ import ru.sinitsynme.analyticspro.repository.EventTypeRepository;
 import ru.sinitsynme.analyticspro.service.EventService;
 import ru.sinitsynme.analyticspro.utils.ListUtils;
 
+import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
@@ -88,6 +89,21 @@ public class EventServiceImpl implements EventService {
         event.setDate(Date.from(Instant.now()));
 
         return eventMapper.toDto(eventRepository.save(event));
+    }
+
+    @Override
+    @Transactional
+    public List<EventDto> addListOfEvents(List<EventDto> eventDtos) {
+        for(EventDto eventDto: eventDtos){
+            try {
+                addEvent(eventDto);
+            }
+            catch (ResourceNotFoundException e){
+                throw new ResourceNotFoundException(
+                        String.format("Failed to save event: %s. Cause: %s. None of the events were persisted.", eventDto, e.getMessage()));
+            }
+        }
+        return eventDtos;
     }
 
     @Override

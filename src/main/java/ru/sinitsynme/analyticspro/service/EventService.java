@@ -9,6 +9,8 @@ public interface EventService {
 
     EventDto addEvent(EventDto eventDto);
 
+    List<EventDto> addListOfEvents(List<EventDto> eventDtos);
+
     List<EventDto> listAllApplicationEvents(Long applicationId);
 
     List<EventDto> listApplicationEventsByFilter(EventFilterDto eventFilterDto);
