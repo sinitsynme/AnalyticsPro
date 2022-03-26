@@ -14,4 +14,6 @@ public interface EventService {
     List<EventDto> listApplicationEventsByFilter(EventFilterDto eventFilterDto);
 
     List<List<Object>> formEventLineDiagramData(EventFilterDto eventFilterDto);
+
+    List<List<Object>> formEventPieDiagramData(EventFilterDto eventFilterDto);
 }

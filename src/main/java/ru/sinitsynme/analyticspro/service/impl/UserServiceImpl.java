@@ -9,8 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.sinitsynme.analyticspro.dto.UserDto;
 import ru.sinitsynme.analyticspro.entity.UserEntity;
-import ru.sinitsynme.analyticspro.exception.UserRegistrationException;
 import ru.sinitsynme.analyticspro.exception.ResourceNotFoundException;
+import ru.sinitsynme.analyticspro.exception.UserRegistrationException;
 import ru.sinitsynme.analyticspro.mapper.UserMapper;
 import ru.sinitsynme.analyticspro.repository.UserRepository;
 import ru.sinitsynme.analyticspro.service.UserService;
@@ -39,9 +39,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserEntity addUser(UserDto userDto) {
+        if (userDto.getEmail().trim().isEmpty()) {
+            throw new UserRegistrationException("Email cannot be empty");
+        }
+
         if (!userDto.getConfirmPassword().equals(userDto.getPassword())) {
             throw new UserRegistrationException("Passwords are not equal");
         }
+        if (userDto.getPassword().trim().isEmpty()) {
+            throw new UserRegistrationException("Password cannot be empty");
+        }
+
         if (checkPresenceByEmail(userDto.getEmail()))
             throw new UserRegistrationException("This email has been already taken by another user");
 

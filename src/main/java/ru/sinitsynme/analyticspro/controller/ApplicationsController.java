@@ -6,20 +6,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.sinitsynme.analyticspro.dto.EventDto;
 import ru.sinitsynme.analyticspro.dto.filter.EventFilterDto;
 import ru.sinitsynme.analyticspro.entity.ApplicationEntity;
-import ru.sinitsynme.analyticspro.entity.event.EventDateFilterType;
-import ru.sinitsynme.analyticspro.entity.event.EventType;
 import ru.sinitsynme.analyticspro.entity.UserEntity;
+import ru.sinitsynme.analyticspro.entity.event.EventDateFilterType;
 import ru.sinitsynme.analyticspro.service.ApplicationService;
 import ru.sinitsynme.analyticspro.service.EventService;
 import ru.sinitsynme.analyticspro.service.UserService;
-import ru.sinitsynme.analyticspro.utils.ListUtils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/applications")
@@ -65,27 +60,25 @@ public class ApplicationsController {
 
         ApplicationEntity app = applicationService.getApplication(id, user);
 
-        if(app.getEventTypeList().size() == 0){
+        if (app.getEventTypeList().size() == 0) {
             redirectAttributes.addAttribute("error",
                     String.format("Application \"%s\" has no registered events. Can't load dashboard", app.getName()));
             return new ModelAndView("redirect:/applications");
         }
 
-        if(eventFilterDto.getTypeFilter() == null || eventFilterDto.getTypeFilter().size() == 0)
+        if (eventFilterDto.getTypeFilter() == null || eventFilterDto.getTypeFilter().size() == 0)
             eventFilterDto.setTypeFilter(List.copyOf(app.getEventTypeList()));
-        if(eventFilterDto.getDateFilter() == null || eventFilterDto.getTypeFilter().size() == 0)
+        if (eventFilterDto.getDateFilter() == null || eventFilterDto.getTypeFilter().size() == 0)
             eventFilterDto.setDateFilter(EventDateFilterType.ALL_TIME);
 
 
-        List<EventDto> eventDtos = eventService.listApplicationEventsByFilter(eventFilterDto);
-        Map<String, Long> chartData = eventDtos.stream().collect(Collectors.groupingBy(EventDto::getName, Collectors.counting()));
-
+        List<List<Object>> pieChartData = eventService.formEventPieDiagramData(eventFilterDto);
         List<List<Object>> lineChartData = eventService.formEventLineDiagramData(eventFilterDto);
 
         modelAndView.addObject("app", app);
         modelAndView.addObject("eventTypes", app.getEventTypeList());
         modelAndView.addObject("dateFilters", EventDateFilterType.values());
-        modelAndView.addObject("chartData", ListUtils.mapToListOfPairs(chartData));
+        modelAndView.addObject("chartData", pieChartData);
         modelAndView.addObject("lineChartData", lineChartData);
 
         return modelAndView;

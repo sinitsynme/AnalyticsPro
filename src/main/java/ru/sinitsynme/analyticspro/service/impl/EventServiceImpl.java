@@ -7,12 +7,14 @@ import ru.sinitsynme.analyticspro.entity.ApplicationEntity;
 import ru.sinitsynme.analyticspro.entity.event.EventDateFilterType;
 import ru.sinitsynme.analyticspro.entity.event.EventEntity;
 import ru.sinitsynme.analyticspro.entity.event.EventType;
+import ru.sinitsynme.analyticspro.exception.NoEventException;
 import ru.sinitsynme.analyticspro.exception.ResourceNotFoundException;
 import ru.sinitsynme.analyticspro.mapper.EventMapper;
 import ru.sinitsynme.analyticspro.repository.ApplicationRepository;
 import ru.sinitsynme.analyticspro.repository.EventRepository;
 import ru.sinitsynme.analyticspro.repository.EventTypeRepository;
 import ru.sinitsynme.analyticspro.service.EventService;
+import ru.sinitsynme.analyticspro.utils.ListUtils;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -32,6 +34,7 @@ public class EventServiceImpl implements EventService {
     private static final int HOUR_COUNT = 24;
     private static final int DAY_COUNT = 30;
     private static final int MONTH_COUNT = 12;
+    private static final int YEAR_COUNT = 10;
 
 
     private static final long MILLIS_IN_HOUR = 3600 * 1000;
@@ -41,7 +44,8 @@ public class EventServiceImpl implements EventService {
 
     private static final String HOUR_DATE_PATTERN = "HH";
     private static final String DAY_DATE_PATTERN = "dd.MM";
-    private static final String MONTH_DATE_PATTERN = "MM.YY";
+    private static final String MONTH_DATE_PATTERN = "MM.yy";
+    private static final String YEAR_DATE_PATTERN = "yyyy";
 
 
     public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, ApplicationRepository applicationRepository, EventTypeRepository eventTypeRepository) {
@@ -108,6 +112,7 @@ public class EventServiceImpl implements EventService {
         Stream<EventEntity> stream = eventRepository.findAllByEventTypeIn(eventFilterDto.getTypeFilter())
                 .stream();
 
+        //Using a special filtering predicate depending on dateFilter
         if (eventFilterDto.getDateFilter() == EventDateFilterType.DAY) stream = stream.filter(isDayEvent());
         if (eventFilterDto.getDateFilter() == EventDateFilterType.MONTH) stream = stream.filter(isMonthEvent());
         if (eventFilterDto.getDateFilter() == EventDateFilterType.YEAR) stream = stream.filter(isYearEvent());
@@ -115,20 +120,45 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<List<Object>> formEventPieDiagramData(EventFilterDto eventFilterDto) {
+        //Filtering dtos
+        List<EventDto> eventDtos = listApplicationEventsByFilter(eventFilterDto);
+
+        //Grouping events by names and counting them
+        Map<String, Long> chartData = eventDtos.stream().collect(Collectors.groupingBy(EventDto::getName, Collectors.counting()));
+
+        //Mapping a map to a list of lists
+        return ListUtils.mapToListOfPairs(chartData);
+    }
+
+    @Override
     public List<List<Object>> formEventLineDiagramData(EventFilterDto eventFilterDto) {
         //Filtering events and sorting down by date
         List<EventEntity> eventEntityList = streamApplicationEventsByFilter(eventFilterDto).sorted(EventEntity::compareTo).collect(Collectors.toList());
+
+        if (eventEntityList.size() == 0) {
+            throw new NoEventException(String.format("No events were found during query %s", eventFilterDto.getDateFilter().name()));
+        }
+
         //Getting grouped events names
-        Set<String> eventNames = eventEntityList.stream().collect(Collectors.groupingBy(it -> it.getEventType().getName())).keySet();
+        List<String> eventNames = new ArrayList<>(eventEntityList.stream()
+                .collect(Collectors.groupingBy(it -> it.getEventType().getName())).keySet());
+
+        //Creating a map of eventNames indexes in result list (will be useful for performance later)
+        Map<String, Integer> nameIndexes = new HashMap<>();
+        for (int i = 0; i < eventNames.size(); i++) {
+            nameIndexes.put(eventNames.get(i), i + 1);
+        }
+
         Calendar calendar = Calendar.getInstance();
 
+        //Getting current time to draw chart
         calendar.setTimeInMillis(System.currentTimeMillis());
-
         Date startDate = calendar.getTime();
 
         //Creating a list for a line chart
-        List<List<Object>> list = new ArrayList<>();
-        list.add(new ArrayList<>());
+        List<List<Object>> chartList = new ArrayList<>();
+        chartList.add(new ArrayList<>());
 
         int timeCount;
         int calendarConst;
@@ -138,70 +168,84 @@ public class EventServiceImpl implements EventService {
 
         EventDateFilterType dateFilterType = eventFilterDto.getDateFilter();
 
+
+        //Adapting algorithm of creating chart for specific date filter
         if (dateFilterType == EventDateFilterType.DAY) {
-            list.get(0).add("Hour");
+            chartList.get(0).add("Hour");
             timeCount = HOUR_COUNT;
             millisConst = MILLIS_IN_HOUR;
             calendarConst = Calendar.HOUR_OF_DAY;
             datePattern = HOUR_DATE_PATTERN;
+
         } else if (dateFilterType == EventDateFilterType.MONTH) {
-            list.get(0).add("Day");
+            chartList.get(0).add("Day");
             timeCount = DAY_COUNT;
             millisConst = MILLIS_IN_DAY;
             calendarConst = Calendar.DAY_OF_MONTH;
             datePattern = DAY_DATE_PATTERN;
-        } else {
-            list.get(0).add("Month");
+
+        } else if (dateFilterType == EventDateFilterType.YEAR) {
+            chartList.get(0).add("Month");
             timeCount = MONTH_COUNT;
             millisConst = MILLIS_IN_MONTH;
             calendarConst = Calendar.MONTH;
             datePattern = MONTH_DATE_PATTERN;
+
+        } else {
+            chartList.get(0).add("Year");
+            timeCount = YEAR_COUNT;
+            millisConst = MILLIS_IN_YEAR;
+            calendarConst = Calendar.YEAR;
+            datePattern = YEAR_DATE_PATTERN;
         }
 
-        list.get(0).addAll(eventNames);
+        chartList.get(0).addAll(eventNames);
 
-
+        //Creating a map for keeping intermediate counting results and filling result chartList with 0
         Map<Integer, Map<String, Integer>> map = new LinkedHashMap<>();
 
         for (int i = 0; i < timeCount; i++) {
             calendar.setTimeInMillis(startDate.getTime() - i * millisConst);
-            int hour = calendar.get(calendarConst);
-            map.put(hour, new HashMap<>());
-            list.add(new ArrayList<>(listWidth));
+            int timePiece = calendar.get(calendarConst);
+            map.put(timePiece, new HashMap<>());
+
+            chartList.add(new ArrayList<>(listWidth));
             for (int j = 0; j < listWidth; j++) {
-                list.get(i + 1).add(0);
+                chartList.get(i + 1).add(0);
             }
-            list.get(i + 1).set(0, hour);
+            chartList.get(i + 1).set(0, timePiece);
         }
 
+        //Filling map with event data
         for (EventEntity event : eventEntityList) {
             String eventName = event.getEventType().getName();
             calendar.setTime(event.getDate());
-            int hour = calendar.get(calendarConst);
-            Map<String, Integer> innerMap = map.get(hour);
+            int timePiece = calendar.get(calendarConst);
+            Map<String, Integer> innerMap = map.get(timePiece);
             innerMap.put(eventName, innerMap.get(eventName) == null ? 1 : innerMap.get(eventName) + 1);
         }
 
+        //Filling chartList with event data using map
         for (int key : map.keySet()) {
             int j = 1;
             for (Map<String, Integer> innerMap : map.values()) {
                 for (String eventName : eventNames) {
-                    int k = list.get(0).indexOf(eventName);
-                    list.get(j).set(k, innerMap.get(eventName) == null ? 0 : innerMap.get(eventName));
-
+                    int k = nameIndexes.get(eventName);
+                    chartList.get(j).set(k, innerMap.get(eventName) == null ? 0 : innerMap.get(eventName));
                 }
                 j++;
             }
         }
 
+        //Adapting dates in list for proper visibility
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
 
-        for (int i = 1; i < timeCount; i++) {
+        for (int i = 1; i <= timeCount; i++) {
             calendar.setTimeInMillis(startDate.getTime() - (i - 1) * millisConst);
-            list.get(i).set(0, simpleDateFormat.format(calendar.getTime()));
+            chartList.get(i).set(0, simpleDateFormat.format(calendar.getTime()));
         }
 
-        return list;
+        return chartList;
     }
 
     private static Predicate<EventEntity> isDayEvent() {

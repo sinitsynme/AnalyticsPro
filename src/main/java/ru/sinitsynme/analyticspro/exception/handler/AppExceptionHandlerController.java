@@ -7,12 +7,12 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.sinitsynme.analyticspro.exception.ApplicationRegistrationException;
-import ru.sinitsynme.analyticspro.exception.ExceptionResponse;
-import ru.sinitsynme.analyticspro.exception.ResourceNotFoundException;
-import ru.sinitsynme.analyticspro.exception.UserRegistrationException;
+import ru.sinitsynme.analyticspro.exception.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 
@@ -50,4 +50,11 @@ public class AppExceptionHandlerController {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(NoEventException.class)
+    public String noEventException(RedirectAttributes redirectAttributes, Exception ex){
+        redirectAttributes.addAttribute("error", ex.getMessage());
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String url = request.getRequestURI();
+        return "redirect:" + url;
+    }
 }
