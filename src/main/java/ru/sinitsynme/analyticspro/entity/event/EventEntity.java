@@ -1,7 +1,6 @@
 package ru.sinitsynme.analyticspro.entity.event;
 
 import ru.sinitsynme.analyticspro.entity.ApplicationEntity;
-import ru.sinitsynme.analyticspro.entity.event.EventType;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -9,7 +8,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "event")
-public class EventEntity {
+public class EventEntity implements Comparable<EventEntity> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -92,5 +91,12 @@ public class EventEntity {
 
     public void setEventType(EventType eventType) {
         this.eventType = eventType;
+    }
+
+    @Override
+    public int compareTo(EventEntity o) {
+        if(date.after(o.date)) return -1;
+        if(date.before(o.date)) return 1;
+        return 0;
     }
 }
