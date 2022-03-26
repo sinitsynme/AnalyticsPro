@@ -30,7 +30,7 @@
 
             // Set chart options
             var options = {
-                'title': 'Events of application \"' + appName + "\"",
+                'title': 'Events of application \"' + appName + "\" - Percentage",
                 'width': 500,
                 'height': 400
             };
@@ -47,13 +47,18 @@
                 [[${lineChartData}]]
             );
 
+            var appName = [[${app.name}]];
+
             var options = {
-                title: 'Event line chart',
+                title: 'Events of application \"' + appName + "\" - Line chart",
                 legend: {position: 'bottom'},
                 sort: 'event',
                 'hAxis': {
                     'direction': -1
                 },
+                'vAxis':
+                    {format: '0'},
+
                 'width': 800,
                 'height': 400
             };
@@ -106,7 +111,12 @@
     </form>
 
 
-    <div class="mt-0 row">
+    <div class="d-flex justify-content-center p-2">
+        <!--/*@thymesVar id="error" type="String"*/-->
+        <div th:unless="${param.error == null}" th:text="${param.error}" class="alert alert-danger" role="alert"></div>
+    </div>
+
+    <div th:if="${param.error == null}" class="mt-0 row">
         <div id="pie_chart_div"></div>
         <div id="line_chart"></div>
     </div>
