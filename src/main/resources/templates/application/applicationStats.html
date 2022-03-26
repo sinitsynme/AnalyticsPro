@@ -43,18 +43,19 @@
         google.charts.setOnLoadCallback(drawLineChart);
 
         function drawLineChart() {
-            var data = google.visualization.arrayToDataTable([
-                ['Year', 'Sales', 'Expenses'],
-                ['2004', 1000, 400],
-                ['2005', 1170, 460],
-                ['2006', 660, 1120],
-                ['2007', 1030, 540]
-            ]);
+            var data = google.visualization.arrayToDataTable(
+                [[${lineChartData}]]
+            );
 
             var options = {
-                title: 'Company Performance',
-                curveType: 'function',
-                legend: {position: 'bottom'}
+                title: 'Event line chart',
+                legend: {position: 'bottom'},
+                sort: 'event',
+                'hAxis': {
+                    'direction': -1
+                },
+                'width': 800,
+                'height': 400
             };
 
             var chart = new google.visualization.LineChart(document.getElementById('line_chart'));
@@ -75,17 +76,28 @@
     </div>
 
 
-    <form method="get" th:action="@{/applications/{id}(id=${app.id})}">
+    <form method="get" th:object="${eventFilterDto}" th:action="@{/applications/{id}(id=${app.id})}">
         <div class="border border-secondary rounded p-3">
-            <div class="form-group row" th:object="${eventFilterDto}">
+            <div class="form-group row">
                 <label class="col-sm-4 col-form-label">Event Types</label>
-                <div class="col-sm-8">
+                <div class="col-sm-4">
                     <th:block th:each="eventType : ${eventTypes}">
                         <input type="checkbox" name="roles"
-                               th:field="*{filter}" th:text="${eventType.name}" th:value="${eventType.id}" class="m-2">
+                               th:field="*{typeFilter}" th:text="${eventType.name}" th:value="${eventType.id}" class="m-2">
                     </th:block>
                 </div>
             </div>
+
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Filter by date</label>
+                <div class="col-sm-4">
+                    <th:block th:each="filter : ${dateFilters}">
+                        <input type="radio" name="roles"
+                               th:field="*{dateFilter}" th:text="${filter}" th:value="${filter}" class="m-2">
+                    </th:block>
+                </div>
+            </div>
+
 
             <div class="text-center">
                 <input type="submit" value="Filter" class="btn btn-primary">
@@ -94,20 +106,14 @@
     </form>
 
 
-    <div class="mt-0" style="width: 600px;">
+    <div class="mt-0 row">
         <div id="pie_chart_div"></div>
+        <div id="line_chart"></div>
     </div>
 
 <!--    <div class="mt-0" style="width: 600px;">-->
 <!--        <div id="line_chart"></div>-->
 <!--    </div>-->
-
-
-    <!--<div>-->
-    <!--    <p th:text="${chartData}"></p>-->
-    <!--    <p th:text="${eventDtos}"></p>-->
-
-    <!--</div>-->
 
     <div th:insert="fragments.html :: footer"></div>
 
