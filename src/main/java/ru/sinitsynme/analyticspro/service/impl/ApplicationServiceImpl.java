@@ -9,6 +9,7 @@ import ru.sinitsynme.analyticspro.exception.ApplicationRegistrationException;
 import ru.sinitsynme.analyticspro.repository.ApplicationRepository;
 import ru.sinitsynme.analyticspro.repository.UserRepository;
 import ru.sinitsynme.analyticspro.service.ApplicationService;
+import ru.sinitsynme.analyticspro.service.UserService;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -18,11 +19,12 @@ import java.util.Objects;
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
 
+    private final UserService userService;
     private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    public ApplicationServiceImpl(UserRepository userRepository, ApplicationRepository applicationRepository) {
+    public ApplicationServiceImpl(UserService userService, UserRepository userRepository, ApplicationRepository applicationRepository) {
+        this.userService = userService;
         this.userRepository = userRepository;
         this.applicationRepository = applicationRepository;
     }
@@ -48,8 +50,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public ApplicationEntity getApplication(Long id, UserEntity user) {
-        if(user.getApplicationList().stream().noneMatch(it -> Objects.equals(it.getId(), id))){
+    public ApplicationEntity getApplication(Long id) {
+        UserEntity principal = userService.getPrincipalEntity().orElseThrow(() -> new AccessDeniedException("No access!"));
+
+        if(principal.getApplicationList().stream().noneMatch(it -> Objects.equals(it.getId(), id))){
             throw new AccessDeniedException("No access!");
         }
 
@@ -59,5 +63,16 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public boolean existsById(Long id) {
         return applicationRepository.existsById(id);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        UserEntity principal = userService.getPrincipalEntity().orElseThrow(() -> new AccessDeniedException("No access!"));
+
+        if(principal.getApplicationList().stream().noneMatch(it -> Objects.equals(it.getId(), id))){
+            throw new AccessDeniedException("No access!");
+        }
+
+        applicationRepository.deleteById(id);
     }
 }

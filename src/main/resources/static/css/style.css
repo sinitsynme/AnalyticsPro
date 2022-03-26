@@ -2,3 +2,7 @@ footer {
     margin-top: 25px;
     height: 50px;
 }
+
+*.icon-red {
+    color: red;
+}

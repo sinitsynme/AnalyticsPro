@@ -55,10 +55,7 @@ public class ApplicationsController {
     public ModelAndView applicationDiagramPage(@PathVariable Long id, @ModelAttribute EventFilterDto eventFilterDto, RedirectAttributes redirectAttributes) {
         ModelAndView modelAndView = new ModelAndView("application/applicationStats");
 
-        UserEntity user = userService.getPrincipalEntity().orElseThrow(
-                () -> new AccessDeniedException("No access!"));
-
-        ApplicationEntity app = applicationService.getApplication(id, user);
+        ApplicationEntity app = applicationService.getApplication(id);
 
         if (app.getEventTypeList().size() == 0) {
             redirectAttributes.addAttribute("error",
@@ -90,6 +87,15 @@ public class ApplicationsController {
         ApplicationEntity app = applicationService.addApplication(appName,
                 userService.getPrincipalEntity().orElseThrow(() -> new AccessDeniedException("Access denied")));
         redirectAttributes.addAttribute("message", String.format("Application %s has been successfully registered", app.getName()));
+        return "redirect:/applications";
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public String deleteApplication(@PathVariable Long id, RedirectAttributes redirectAttributes){
+        applicationService.deleteById(id);
+
+        redirectAttributes.addAttribute("message", "Application has been successfully deleted");
         return "redirect:/applications";
     }
 

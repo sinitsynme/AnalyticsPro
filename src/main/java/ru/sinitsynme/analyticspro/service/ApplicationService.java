@@ -7,8 +7,10 @@ public interface ApplicationService {
 
     ApplicationEntity addApplication(String name, UserEntity user);
 
-    ApplicationEntity getApplication(Long id, UserEntity user);
+    ApplicationEntity getApplication(Long id);
 
     boolean existsById(Long id);
+
+    void deleteById(Long id);
 
 }
