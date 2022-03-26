@@ -1,11 +1,17 @@
 package ru.sinitsynme.analyticspro.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Событие")
 public class EventDto {
 
+    @Schema(description = "Название события")
     private String name;
 
+    @Schema(description = "Идентификатор приложения")
     private Long applicationId;
 
+    @Schema(description = "Дополнительная информация")
     private String additionalData;
 
     public EventDto() {
