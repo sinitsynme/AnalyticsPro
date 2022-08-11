@@ -1,6 +1,8 @@
 # AnalyticsPro
 Little project for VolgaIT'22.
 
+**AnalyticsPro** is an analytic system designed for tracking events of registered applications. A single user is able to register their application in the system and get specific ID, which is used for tracking. Sending various application events  to the system by REST using this ID the user can see charts, displaying stats of their app.
+
 # First steps for launching application
 
 Unfortunately, Docker Compose is still a trouble for me*. 
